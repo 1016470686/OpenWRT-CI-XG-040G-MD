@@ -160,3 +160,36 @@ CONFIG_PACKAGE_ucode-mod-math=y
 CONFIG_PACKAGE_luci-theme-tp=y
 CONFIG_PACKAGE_luci-theme-footstrap=y
 CONFIG_PACKAGE_luci-app-vantage=y
+
+# =====================================================================
+# 本次自定义云编译追加（Nokia XG-040G-MD / AN7581 / ImmortalWrt 25.12）
+# 说明：make defconfig 以最后一处赋值为准，下面重复声明不会造成冲突。
+# =====================================================================
+
+# ---- 指定集成的 11 个插件（逐个显式声明，便于核对）----
+CONFIG_PACKAGE_luci-app-autoreboot=y
+CONFIG_PACKAGE_luci-app-firewall=y
+CONFIG_PACKAGE_luci-app-gecoosac=y
+CONFIG_PACKAGE_luci-app-iptv=y
+CONFIG_PACKAGE_luci-app-lucky=y
+CONFIG_PACKAGE_luci-app-package-manager=y
+CONFIG_PACKAGE_luci-app-pon=y
+CONFIG_PACKAGE_luci-app-ssr-plus=y
+CONFIG_PACKAGE_luci-app-store=y
+CONFIG_PACKAGE_luci-app-vantage=y
+CONFIG_PACKAGE_luci-theme-footstrap=y
+
+# ---- UPnP 依赖修复 ----
+# 原始配置没有编译 iptables 相关内核模块，在线安装 luci-app-upnp 时会报：
+#   “依赖的软件包 kmod-ip6tables / kmod-nft-compat / kmod-ipt-core 在所有仓库都未提供”
+# 原因：默认防火墙是 nftables(fw4)，iptables 的内核模块没有被选中，
+#       因此固件对应的软件源里根本没有这三个 kmod。
+# 处理：把 iptables-nft / ip6tables-nft 及其内核依赖一起编译，
+#       同时直接内置 UPnP（nftables 变体，运行时不依赖 iptables）。
+CONFIG_PACKAGE_kmod-ipt-core=y
+CONFIG_PACKAGE_kmod-ip6tables=y
+CONFIG_PACKAGE_kmod-nft-compat=y
+CONFIG_PACKAGE_iptables-nft=y
+CONFIG_PACKAGE_ip6tables-nft=y
+CONFIG_PACKAGE_miniupnpd-nftables=y
+CONFIG_PACKAGE_luci-app-upnp=y
