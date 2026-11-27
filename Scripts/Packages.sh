@@ -102,6 +102,21 @@ if [ -f ./luci-app-airoha-npu/luci-app-airoha-npu/Makefile ]; then
 	echo "airoha-npu: include path fixed"
 fi
 
+# 网盘版里的 natmapt / socat：他那边放在一个叫 feeds/base 的本地 feed 里，
+# 这里换用公开的等价仓库（Makefile 都用 $(TOPDIR)/feeds/luci/luci.mk，可直接放 package/）
+UPDATE_PACKAGE "luci-app-natmapt" "muink/luci-app-natmapt" "master"
+UPDATE_PACKAGE "natmapt" "muink/openwrt-natmapt" "master"
+UPDATE_PACKAGE "luci-app-socat" "chenmozhijin/luci-app-socat" "main"
+
+# PON 状态卡片：原始出处是 bingoguo93/immortalwrt 的 6.18 分支
+# 里的 package/user/luci-app-pon-status（他自己写的，没有公开仓库），
+# 已原样取来放在本仓库 Packages/ 目录，构建时复制进 package/。
+if [ -d "$GITHUB_WORKSPACE/Packages/luci-app-pon-status" ]; then
+	rm -rf ./luci-app-pon-status
+	cp -rf "$GITHUB_WORKSPACE/Packages/luci-app-pon-status" ./
+	echo "luci-app-pon-status: vendored package copied"
+fi
+
 #更新软件包版本
 UPDATE_VERSION() {
 	local PKG_NAME=$1
