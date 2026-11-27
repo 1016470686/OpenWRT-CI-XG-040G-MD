@@ -86,20 +86,16 @@ UPDATE_PACKAGE "luci-app-lucky" "sirpdboy/luci-app-lucky" "main"
 UPDATE_PACKAGE "luci-app-tailscale-community" "Tokisaki-Galaxy/luci-app-tailscale-community" "master" "" "luci-app-tailscale-community"
 UPDATE_PACKAGE "istore" "linkease/istore" "main"
 
-#对齐网盘版额外需要的两个仓库（网盘固件里带 luci-theme-tp / luci-app-airoha-npu）
+#对齐网盘版额外需要的仓库（网盘固件里带 luci-theme-tp）
 UPDATE_PACKAGE "luci-theme-tp" "bingoguo93/luci-theme-tp" "main"
 
-# luci-app-airoha-npu：该仓库的 Makefile 写死了相对路径 `include ../../luci.mk`，
-# 只有放在 feeds/luci/applications/<app>/ 这种深度才成立；直接 clone 到 package/ 下
-# 会解析失败、包被静默跳过（TEST 时表现为配置里那一行整个消失）。
-# 处理：clone 后把包目录提到 package/ 一层，并把 include 改成绝对路径。
-UPDATE_PACKAGE "airoha-npu" "rchen14b/luci-app-airoha-npu" "main"
-if [ -f ./luci-app-airoha-npu/luci-app-airoha-npu/Makefile ]; then
-	mv -f ./luci-app-airoha-npu/luci-app-airoha-npu ./airoha-npu-pkg
+# luci-app-airoha-npu 1.2.1：公开仓库只到 1.0.1 且没有中文，
+# 这里用从网盘固件里原样提取的 1.2.1（含中文 .lmo），放在本仓库 Packages/ 下。
+# 注意：不要再 clone rchen14b/luci-app-airoha-npu，否则同名包会重复。
+if [ -d "$GITHUB_WORKSPACE/Packages/luci-app-airoha-npu" ]; then
 	rm -rf ./luci-app-airoha-npu
-	mv -f ./airoha-npu-pkg ./luci-app-airoha-npu
-	sed -i 's#include ../../luci.mk#include $(TOPDIR)/feeds/luci/luci.mk#' ./luci-app-airoha-npu/Makefile
-	echo "airoha-npu: include path fixed"
+	cp -rf "$GITHUB_WORKSPACE/Packages/luci-app-airoha-npu" ./
+	echo "luci-app-airoha-npu: vendored 1.2.1 copied"
 fi
 
 # 网盘版里的 natmapt / socat：他那边放在一个叫 feeds/base 的本地 feed 里，
