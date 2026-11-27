@@ -88,7 +88,19 @@ UPDATE_PACKAGE "istore" "linkease/istore" "main"
 
 #对齐网盘版额外需要的两个仓库（网盘固件里带 luci-theme-tp / luci-app-airoha-npu）
 UPDATE_PACKAGE "luci-theme-tp" "bingoguo93/luci-theme-tp" "main"
+
+# luci-app-airoha-npu：该仓库的 Makefile 写死了相对路径 `include ../../luci.mk`，
+# 只有放在 feeds/luci/applications/<app>/ 这种深度才成立；直接 clone 到 package/ 下
+# 会解析失败、包被静默跳过（TEST 时表现为配置里那一行整个消失）。
+# 处理：clone 后把包目录提到 package/ 一层，并把 include 改成绝对路径。
 UPDATE_PACKAGE "airoha-npu" "rchen14b/luci-app-airoha-npu" "main"
+if [ -f ./luci-app-airoha-npu/luci-app-airoha-npu/Makefile ]; then
+	mv -f ./luci-app-airoha-npu/luci-app-airoha-npu ./airoha-npu-pkg
+	rm -rf ./luci-app-airoha-npu
+	mv -f ./airoha-npu-pkg ./luci-app-airoha-npu
+	sed -i 's#include ../../luci.mk#include $(TOPDIR)/feeds/luci/luci.mk#' ./luci-app-airoha-npu/Makefile
+	echo "airoha-npu: include path fixed"
+fi
 
 #更新软件包版本
 UPDATE_VERSION() {
